@@ -1,0 +1,39 @@
+# Install (run once in Colab)
+!pip install pgmpy
+
+from pgmpy.models import DiscreteBayesianNetwork
+from pgmpy.inference import VariableElimination
+import pandas as pd
+
+# Sample dataset
+data = pd.DataFrame({
+    'Rain': ['No','No','Yes','Yes','No','Yes','Yes','No'],
+    'TrafficJam': ['Yes','No','Yes','No','Yes','Yes','No','No'],
+    'ArriveLate': ['Yes','No','Yes','No','No','Yes','Yes','No']
+})
+
+# Define structure
+model = DiscreteBayesianNetwork([
+    ('Rain','TrafficJam'),
+    ('TrafficJam','ArriveLate')
+])
+
+# Train model
+model.fit(data)
+
+# Print CPDs
+print("CPDs:")
+for cpd in model.get_cpds():
+    print(cpd)
+
+# Inference
+infer = VariableElimination(model)
+
+# Query: P(ArriveLate | Rain=Yes)
+result = infer.query(
+    variables=['ArriveLate'],
+    evidence={'Rain':'Yes'}
+)
+
+print("\nInference Result:")
+print(result)
