@@ -1,0 +1,38 @@
+states = ['Healthy', 'Fever']
+observations = ['normal', 'cold', 'dizzy']
+
+start_prob = {'Healthy': 0.7, 'Fever': 0.3}
+
+transition_prob = {
+    'Healthy': {'Healthy': 0.6, 'Fever': 0.4},
+    'Fever': {'Healthy': 0.3, 'Fever': 0.7}
+}
+
+emission_prob = {
+    'Healthy': {'normal': 0.5, 'cold': 0.4, 'dizzy': 0.1},
+    'Fever': {'normal': 0.1, 'cold': 0.3, 'dizzy': 0.6}
+}
+
+obs_sequence = ['normal', 'cold', 'dizzy']
+
+def forward_algorithm(states, obs_sequence, start_prob, transition_prob, emission_prob):
+    forward = []
+
+    f0 = {}
+    for s in states:
+        f0[s] = start_prob[s] * emission_prob[s][obs_sequence[0]]
+    forward.append(f0)
+
+    for t in range(1, len(obs_sequence)):
+        ft = {}
+        for curr in states:
+            prob = 0
+            for prev in states:
+                prob += forward[t-1][prev] * transition_prob[prev][curr]
+            ft[curr] = prob * emission_prob[curr][obs_sequence[t]]
+        forward.append(ft)
+
+    return sum(forward[-1][s] for s in states)
+
+result = forward_algorithm(states, obs_sequence, start_prob, transition_prob, emission_prob)
+print("Probability of observation sequence:", result)
