@@ -1,0 +1,51 @@
+def policy_iteration(mdp, theta=1e-6):
+    # Initialize random policy
+    policy = {s: mdp.actions[0] for s in mdp.states}
+    V = {s: 0 for s in mdp.states}
+    
+    while True:
+        # Policy Evaluation
+        while True:
+            delta = 0
+            for s in mdp.states:
+                v = V[s]
+                a = policy[s]
+                
+                value = 0
+                for prob, next_s in mdp.P[s][a]:
+                    reward = mdp.R[s][a][next_s]
+                    value += prob * (reward + mdp.gamma * V[next_s])
+                
+                V[s] = value
+                delta = max(delta, abs(v - V[s]))
+            
+            if delta < theta:
+                break
+        
+        # Policy Improvement
+        policy_stable = True
+        
+        for s in mdp.states:
+            old_action = policy[s]
+            best_action = None
+            best_value = float('-inf')
+            
+            for a in mdp.actions:
+                value = 0
+                for prob, next_s in mdp.P[s][a]:
+                    reward = mdp.R[s][a][next_s]
+                    value += prob * (reward + mdp.gamma * V[next_s])
+                
+                if value > best_value:
+                    best_value = value
+                    best_action = a
+            
+            policy[s] = best_action
+            
+            if old_action != best_action:
+                policy_stable = False
+        
+        if policy_stable:
+            break
+    
+    return V, policy

@@ -1,0 +1,51 @@
+import numpy as np
+
+class MDP:
+    def __init__(self, states, actions, transition_prob, rewards, gamma=0.9):
+        self.states = states
+        self.actions = actions
+        self.P = transition_prob   # P[s][a] = list of (prob, next_state)
+        self.R = rewards           # R[s][a][next_state]
+        self.gamma = gamma
+
+def value_iteration(mdp, theta=1e-6):
+    V = {s: 0 for s in mdp.states}
+    
+    while True:
+        delta = 0
+        for s in mdp.states:
+            v = V[s]
+            action_values = []
+            
+            for a in mdp.actions:
+                value = 0
+                for prob, next_s in mdp.P[s][a]:
+                    reward = mdp.R[s][a][next_s]
+                    value += prob * (reward + mdp.gamma * V[next_s])
+                action_values.append(value)
+            
+            V[s] = max(action_values)
+            delta = max(delta, abs(v - V[s]))
+        
+        if delta < theta:
+            break
+    
+    # Extract policy
+    policy = {}
+    for s in mdp.states:
+        best_action = None
+        best_value = float('-inf')
+        
+        for a in mdp.actions:
+            value = 0
+            for prob, next_s in mdp.P[s][a]:
+                reward = mdp.R[s][a][next_s]
+                value += prob * (reward + mdp.gamma * V[next_s])
+            
+            if value > best_value:
+                best_value = value
+                best_action = a
+        
+        policy[s] = best_action
+    
+    return V, policy

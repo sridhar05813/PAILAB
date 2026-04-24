@@ -1,0 +1,41 @@
+import numpy as np
+
+# Grid size
+n = 4
+gamma = 0.9
+
+# Initialize value function
+V = np.zeros((n, n))
+
+# Terminal state
+goal = (3, 3)
+
+# Actions: up, down, left, right
+actions = [(-1,0),(1,0),(0,-1),(0,1)]
+
+def is_valid(x, y):
+    return 0 <= x < n and 0 <= y < n
+
+# Value Iteration
+for iteration in range(100):
+    new_V = np.copy(V)
+    for i in range(n):
+        for j in range(n):
+            if (i, j) == goal:
+                continue
+            
+            values = []
+            for a in actions:
+                ni, nj = i + a[0], j + a[1]
+                if not is_valid(ni, nj):
+                    ni, nj = i, j
+                
+                reward = 10 if (ni, nj) == goal else -1
+                values.append(reward + gamma * V[ni, nj])
+            
+            new_V[i, j] = max(values)
+    
+    V = new_V
+
+print("Optimal Value Function:")
+print(V)

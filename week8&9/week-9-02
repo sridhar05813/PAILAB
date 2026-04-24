@@ -1,0 +1,46 @@
+import numpy as np
+
+states = [0,1,2]
+actions = [0,1]
+gamma = 0.9
+
+# Initialize
+policy = np.zeros(len(states), dtype=int)
+V = np.zeros(len(states))
+
+def reward(s,a):
+    if s == 2: return -10 if a==0 else -3
+    if s == 1: return -5 if a==0 else -2
+    return -1
+
+def next_state(s,a):
+    if a == 1:
+        return max(0, s-1)
+    return min(2, s+1)
+
+while True:
+    # Policy Evaluation
+    for _ in range(50):
+        for s in states:
+            a = policy[s]
+            ns = next_state(s,a)
+            V[s] = reward(s,a) + gamma * V[ns]
+    
+    # Policy Improvement
+    stable = True
+    for s in states:
+        old = policy[s]
+        values = []
+        for a in actions:
+            ns = next_state(s,a)
+            values.append(reward(s,a) + gamma * V[ns])
+        
+        policy[s] = np.argmax(values)
+        if old != policy[s]:
+            stable = False
+    
+    if stable:
+        break
+
+print("Optimal Policy:", policy)
+print("Value Function:", V)
